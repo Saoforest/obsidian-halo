@@ -6,6 +6,8 @@ import { randomUUID } from "crypto";
 import { readMatter } from "../utils/yaml";
 import { slugify } from "transliteration";
 import i18next from "i18next";
+import ShortUniqueId from "short-unique-id";
+const uid = new ShortUniqueId()
 
 class HaloService {
   private readonly site: HaloSite;
@@ -58,7 +60,7 @@ class HaloService {
           template: "",
           cover: "",
           deleted: false,
-          publish: false,
+          publish: true,
           publishTime: undefined,
           pinned: false,
           allowComment: true,
@@ -140,7 +142,7 @@ class HaloService {
       } else {
         params.post.metadata.name = randomUUID();
         params.post.spec.title = matterData?.title || activeEditor.file.basename;
-        params.post.spec.slug = slugify(params.post.spec.title, { trim: true });
+        params.post.spec.slug = this.shortUUID(params.post.spec.title);
 
         const post = await requestUrl({
           url: `${this.site.url}/apis/api.console.halo.run/v1alpha1/posts`,
@@ -186,7 +188,9 @@ class HaloService {
       frontmatter.halo = {
         site: this.site.url,
         name: params.post.metadata.name,
-        publish: params.post.spec.publish,
+        // 强制给我改成true
+        publish: true,
+        // publish: params.post.spec.publish,
       };
     });
 
@@ -370,6 +374,11 @@ class HaloService {
         return found ? found.spec.displayName : undefined;
       })
       .filter(Boolean) as string[];
+  }
+
+  private shortUUID(title: string): string {
+    if(!title) return "";
+    return uid.randomUUID(8)
   }
 }
 
