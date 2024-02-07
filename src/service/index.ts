@@ -37,6 +37,7 @@ const Strategy: StrategyInterface = {
 
 
 class HaloService {
+  
   private readonly site: HaloSite;
   private readonly app: App;
   private readonly headers: Record<string, string> = {};
@@ -49,6 +50,28 @@ class HaloService {
       "Content-Type": "application/json",
       Authorization: `Bearer ${site.token}`,
     };
+  }
+
+  public async generateMetadata() {
+    const { activeEditor } = this.app.workspace;
+
+    if (!activeEditor || !activeEditor.file) {
+      return;
+    }
+
+
+    this.app.fileManager.processFrontMatter(activeEditor.file, (frontmatter) => {
+      frontmatter.title = activeEditor?.file?.basename;
+      frontmatter.categories = [];
+      frontmatter.tags = [];
+      frontmatter.slugStrategy = this.site.slugStrategy;
+      frontmatter.halo = {
+        site: this.site.url,
+        name: randomUUID(),
+        // 修改为配置的默认发布状态
+        publish: this.site.publish,
+      };
+    });
   }
 
   public async getPost(name: string): Promise<PostRequest | undefined> {

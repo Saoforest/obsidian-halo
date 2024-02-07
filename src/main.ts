@@ -28,6 +28,15 @@ export default class HaloPlugin extends Plugin {
       await this.publishCommand();
     });
 
+    // 生成元数据
+    this.addCommand({
+      id: "metadata-generator",
+      name: i18next.t("command.metadata_generator.name"),
+      callback: async () => {
+        await this.generateMetadata();
+      }
+    })
+
     this.addCommand({
       id: "publish",
       name: i18next.t("command.publish.name"),
@@ -117,6 +126,24 @@ export default class HaloPlugin extends Plugin {
 
   async saveSettings() {
     await this.saveData(this.settings);
+  }
+
+  private async generateMetadata() {
+    const { activeEditor } = this.app.workspace;
+
+    if (!activeEditor || !activeEditor.file) {
+      return;
+    }
+
+    const matterData = this.app.metadataCache.getFileCache(activeEditor.file)?.frontmatter;
+
+    if (matterData) {
+      return;
+    }
+
+    const site = await openSiteSelectionModal(this);
+    const service = new HaloService(this.app, site);
+    await service.generateMetadata();
   }
 
   private async publishCommand() {
