@@ -64,11 +64,10 @@ class HaloService {
       frontmatter.title = activeEditor?.file?.basename;
       frontmatter.categories = [];
       frontmatter.tags = [];
-      frontmatter.slugStrategy = this.site.slugStrategy;
+
       frontmatter.halo = {
         site: this.site.url,
         name: randomUUID(),
-        // 修改为配置的默认发布状态
         publish: this.site.publish,
       };
     });
