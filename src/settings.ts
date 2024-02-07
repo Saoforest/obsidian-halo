@@ -3,11 +3,14 @@ import HaloPlugin from "./main";
 import { HaloSitesModal } from "./sites-modal";
 import i18next from "i18next";
 
+export type ModeType = "UUID" | "shortUUID" | "timestamp" | "generateByTitle";
 export interface HaloSite {
   name: string;
   url: string;
   token: string;
   default: boolean;
+  publish: boolean;
+  slugStrategy: ModeType;
 }
 
 export interface HaloSetting {

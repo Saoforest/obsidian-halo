@@ -7,7 +7,34 @@ import { readMatter } from "../utils/yaml";
 import { slugify } from "transliteration";
 import i18next from "i18next";
 import ShortUniqueId from "short-unique-id";
+
 const uid = new ShortUniqueId()
+interface StrategyInterface {
+  generateByTitle: (value: string) => string;
+  shortUUID: (value: string) => string;
+  UUID: (value: string) => string;
+  timestamp: (value: string) => string;
+}
+const Strategy: StrategyInterface = {
+  generateByTitle: (value: string) => {
+    if (!value) return "";
+    return slugify(value, { trim: true });
+  },
+  shortUUID: (value: string) => {
+    if (!value) return "";
+    return uid.randomUUID(8);
+  },
+  UUID: (value: string) => {
+    if (!value) return "";
+    return randomUUID();
+  },
+  timestamp: (value: string) => {
+    if (!value) return "";
+    return new Date().getTime().toString();
+  },
+};
+
+
 
 class HaloService {
   private readonly site: HaloSite;
@@ -60,7 +87,7 @@ class HaloService {
           template: "",
           cover: "",
           deleted: false,
-          publish: true,
+          publish: false,
           publishTime: undefined,
           pinned: false,
           allowComment: true,
@@ -87,6 +114,7 @@ class HaloService {
         rawType: "markdown",
       },
     };
+    let publishStatus: boolean = Boolean(this.site.publish);
 
     const { content: raw } = readMatter(await this.app.vault.read(activeEditor.file));
     const matterData = this.app.metadataCache.getFileCache(activeEditor.file)?.frontmatter;
@@ -96,6 +124,7 @@ class HaloService {
       new Notice(i18next.t("service.error_site_not_match"));
       return;
     }
+
 
     if (matterData?.halo?.name) {
       const post = await this.getPost(matterData.halo.name);
@@ -120,6 +149,13 @@ class HaloService {
       params.post.spec.tags = tagNames;
     }
 
+    if(matterData?.halo?.publish) {
+      publishStatus = Boolean(matterData.halo.publish);
+    }
+
+    
+    params.post.spec.publish = publishStatus;
+
     try {
       if (params.post.metadata.name) {
         const { name } = params.post.metadata;
@@ -142,7 +178,7 @@ class HaloService {
       } else {
         params.post.metadata.name = randomUUID();
         params.post.spec.title = matterData?.title || activeEditor.file.basename;
-        params.post.spec.slug = this.shortUUID(params.post.spec.title);
+        params.post.spec.slug = Strategy[this.site.slugStrategy](params.post.spec.title);
 
         const post = await requestUrl({
           url: `${this.site.url}/apis/api.console.halo.run/v1alpha1/posts`,
@@ -188,9 +224,8 @@ class HaloService {
       frontmatter.halo = {
         site: this.site.url,
         name: params.post.metadata.name,
-        // 强制给我改成true
-        publish: true,
-        // publish: params.post.spec.publish,
+        // 修改为配置的默认发布状态
+        publish: publishStatus,
       };
     });
 
@@ -376,10 +411,6 @@ class HaloService {
       .filter(Boolean) as string[];
   }
 
-  private shortUUID(title: string): string {
-    if(!title) return "";
-    return uid.randomUUID(8)
-  }
 }
 
 export default HaloService;

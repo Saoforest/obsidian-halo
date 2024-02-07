@@ -55,6 +55,20 @@
         "name": "是否设置为默认",
         "description": "设置为默认的发布站点"
       },
+      "publish": {
+        "name": "是否设置默认发布",
+        "description": "推送的文章是否默认发布"
+      },
+      "slug_strategy": {
+        "name": "slug 策略",
+        "description": "别名生成策略",
+        "options": {
+          "generateByTitle": "根据文章标题生成",
+          "shortUUID": "短id",
+          "UUID": "uuid",
+          "timestamp": "时间戳"
+        }
+      },
       "validate": {
         "button": "验证",
         "button_validating": "验证中...",

@@ -2,6 +2,7 @@ import { Modal, Setting, requestUrl, Notice } from "obsidian";
 import HaloPlugin from "./main";
 import { HaloSite } from "./settings";
 import i18next from "i18next";
+import {ModeType} from "./settings"
 
 export function openSiteEditingModal(
   plugin: HaloPlugin,
@@ -29,6 +30,8 @@ export class SiteEditingModal extends Modal {
       url: "",
       token: "",
       default: false,
+      publish: true,
+      slugStrategy: "generateByTitle",
     },
     private readonly index: number = -1,
     private readonly onSubmit: (site: HaloSite, index?: number) => void,
@@ -80,6 +83,31 @@ export class SiteEditingModal extends Modal {
             this.currentSite.default = value;
           }),
         );
+
+        // 添加是否默认发布的选项
+        new Setting(contentEl)
+        .setName(i18next.t("site_editing_modal.settings.publish.name"))
+        .setDesc(i18next.t("site_editing_modal.settings.publish.description"))
+        .addToggle((toggle) =>
+          toggle.setValue(this.currentSite.publish).onChange((value) => {
+            this.currentSite.publish = value;
+          }),
+        );
+
+        // 添加选择slug策略的选项
+        new Setting(contentEl)
+        .setName(i18next.t("site_editing_modal.settings.slug_strategy.name"))
+        .setDesc(i18next.t("site_editing_modal.settings.slug_strategy.description"))
+        .addDropdown((dropdown) => {
+          dropdown.addOption("generateByTitle", i18next.t("site_editing_modal.settings.slug_strategy.options.generateByTitle"));
+          dropdown.addOption("UUID", i18next.t("site_editing_modal.settings.slug_strategy.options.UUID"));
+          dropdown.addOption("shortUUID", i18next.t("site_editing_modal.settings.slug_strategy.options.shortUUID"));
+          dropdown.addOption("timestamp", i18next.t("site_editing_modal.settings.slug_strategy.options.timestamp"));
+          dropdown.setValue(this.currentSite.slugStrategy || "generateByTitle").onChange((value) => {
+            this.currentSite.slugStrategy = value as ModeType;
+          });
+        })
+
 
       new Setting(contentEl)
         .addButton((button) => {
