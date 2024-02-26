@@ -109,7 +109,7 @@ class HaloService {
           template: "",
           cover: "",
           deleted: false,
-          publish: false,
+          publish: true,
           publishTime: undefined,
           pinned: false,
           allowComment: true,
@@ -214,7 +214,7 @@ class HaloService {
       }
 
       // Publish post
-      if (matterData?.halo?.publish) {
+      if (params.post.spec.publish) {
         await requestUrl({
           url: `${this.site.url}/apis/api.console.halo.run/v1alpha1/posts/${params.post.metadata.name}/publish`,
           method: "PUT",
